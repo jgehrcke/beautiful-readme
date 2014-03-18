@@ -47,6 +47,74 @@ ch.setFormatter(formatter)
 log.addHandler(ch)
 
 
+def main():
+    # Read basic HTML scaffold.
+    log.info("Read HTML template from %s", HTMLTMPL)
+    with open(HTMLTMPL, "rb") as f:
+        htmltpl = Template(f.read().decode("utf-8"))
+
+    # (Re-)create build directory.
+    log.info("Create build directory.")
+    if os.path.isdir(BUILDDIR):
+        shutil.rmtree(BUILDDIR)
+        os.mkdir(BUILDDIR)
+    shutil.copytree("resources/static", os.path.join(BUILDDIR, "static"))
+
+    # Create document body: convert body source (rst, markdown) to HTML.
+    log.info("Create document body: convert source to HTML.")
+    bodysourcefilepath = sys.argv[1]
+    args = [
+        conf.rst2htmlexe,
+        "--template=%s" % DOCUTLSTMPL,
+        bodysourcefilepath
+        ]
+    log.debug("Subprocess details: %s", args)
+    sp = Popen(args, stdout=PIPE, stderr=PIPE)
+    bodyconverter_out, bodyconverter_err = sp.communicate()
+    if sp.returncode != 0:
+        log.error("Subprocess exitcode: %s", sp.returncode)
+        log.info("Subprocess stderr:\n%s", bodyconverter_err)
+        log.info("Exit with code 1.")
+        sys.exit(1)
+
+    # Filter body.
+    body = bodyconverter_out        
+    bodyfilter = [DocutilsTitleFilter()]
+    for bfilter in bodyfilter:
+        body = bfilter.process(body)
+
+    body, toc = auto_toc_from_h1(body)
+
+    # Prepare GA snippet if requested by config.
+    ga_snippet = ""
+    if conf.googleanalytics_id:
+        log.info("Prepare Google Analytics snippet with ID %s",
+            conf.googleanalytics_id)
+        ga_snippet = Template(GA_SNIPPET).substitute(
+            googleanalytics_id = conf.googleanalytics_id)
+
+    # Create HTML document: fill basic HTML template.
+    log.info("Create main HTML document (fill template).")
+    template_mapping = {
+        "title": conf.title,
+        "description": conf.description,
+        "body": body,
+        "about": conf.about,
+        "copyright": conf.copyright,
+        "sidebar": conf.sidebar + "\n" + toc,
+        "googleanalytics": ga_snippet,
+        "customcss": conf.customcss,
+        }
+    htmlout = htmltpl.substitute(template_mapping)
+
+
+    # Write HTML document.
+    indexhtmlpath = os.path.join(BUILDDIR, "index.html")
+    log.info("Write %s.", indexhtmlpath)
+    with open(indexhtmlpath, "wb") as f:
+        f.write(htmlout.encode("utf-8"))
+
+
 class BodyFilterError(Exception):
     """Error class for all kind of issues during body filtering."""
     pass
@@ -147,73 +215,6 @@ def auto_toc_from_h1(body):
     toc = "\n".join([prefix, listhtml, suffix])
     return body, toc
  
-
-def main():
-    # Read basic HTML scaffold.
-    log.info("Read HTML template from %s", HTMLTMPL)
-    with open(HTMLTMPL, "rb") as f:
-        htmltpl = Template(f.read().decode("utf-8"))
-
-    # (Re-)create build directory.
-    log.info("Create build directory.")
-    if os.path.isdir(BUILDDIR):
-        shutil.rmtree(BUILDDIR)
-        os.mkdir(BUILDDIR)
-    shutil.copytree("resources/static", os.path.join(BUILDDIR, "static"))
-
-    # Create document body: convert body source (rst, markdown) to HTML.
-    log.info("Create document body: convert source to HTML.")
-    bodysourcefilepath = sys.argv[1]
-    args = [
-        "rst2html.py",
-        "--template=%s" % DOCUTLSTMPL,
-        bodysourcefilepath
-        ]
-    log.debug("Subprocess details: %s", args)
-    sp = Popen(args, stdout=PIPE, stderr=PIPE)
-    bodyconverter_out, bodyconverter_err = sp.communicate()
-    if sp.returncode != 0:
-        log.error("Subprocess exitcode: %s", sp.returncode)
-        log.info("Subprocess stderr:\n%s", bodyconverter_err)
-        log.info("Exit with code 1.")
-        sys.exit(1)
-
-    # Filter body.
-    body = bodyconverter_out        
-    bodyfilter = [DocutilsTitleFilter()]
-    for bfilter in bodyfilter:
-        body = bfilter.process(body)
-
-    body, toc = auto_toc_from_h1(body)
-
-    # Prepare GA snippet if requested by config.
-    ga_snippet = ""
-    if conf.googleanalytics_id:
-        log.info("Prepare Google Analytics snippet with ID %s",
-            conf.googleanalytics_id)
-        ga_snippet = Template(GA_SNIPPET).substitute(
-            googleanalytics_id = conf.googleanalytics_id)
-
-    # Create HTML document: fill basic HTML template.
-    log.info("Create main HTML document (fill template).")
-    template_mapping = {
-        "title": conf.title,
-        "description": conf.description,
-        "body": body,
-        "about": conf.about,
-        "copyright": conf.copyright,
-        "sidebar": conf.sidebar + "\n" + toc,
-        "googleanalytics": ga_snippet,
-        }
-    htmlout = htmltpl.substitute(template_mapping)
-
-
-    # Write HTML document.
-    indexhtmlpath = os.path.join(BUILDDIR, "index.html")
-    log.info("Write %s.", indexhtmlpath)
-    with open(indexhtmlpath, "wb") as f:
-        f.write(htmlout.encode("utf-8"))
-
 
 # Define GA snippet. Official version from
 # https://developers.google.com/analytics/devguides/collection/gajs/asyncTracking
