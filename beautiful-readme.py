@@ -95,14 +95,20 @@ class DocutilsTitleFilter(BodyFilter):
 
 
 def heading_to_label(heading):
-    log.debug("Converting '%r' to label.", heading)
-    # First, decode HTML entities:
+    """Generate anchor id ("label") for heading.
+
+    `heading` is the text between opening and closing h1 tag.
+    """
+    log.debug("Convert heading '%r' to anchor id.", heading)
+    # First, decode HTML entities.
     h = htmlparser.HTMLParser().unescape(heading)
     log.debug("Unescaped heading: %r", h)
-    # Then, split at whitespace, then get rid of all
-    # non-alphanumeric chars in each token and reconnect with "-".
+    # Then, split at whitespace. Then get rid of all
+    # non-alphanumeric chars in each token.
+    # Then reconnect tokens with "-".
+    # Prepend "brtoc-" to ensure unique ids (any random string woud do).
     cleantokens = (re.sub('[^0-9a-zA-Z]+', '', s).lower() for s in h.split())
-    return "toc-" + "-".join(t for t in cleantokens if t)
+    return "brtoc-" + "-".join(t for t in cleantokens if t)
 
 
 def auto_toc_from_h1(body):
@@ -130,13 +136,14 @@ def auto_toc_from_h1(body):
     listitems = []
     for label, heading in label_heading_dict.items():
         listitems.append('<li><a href="#%s">%s</a></li>' % (label, heading))
-    listhtml = "\n".join(listitems)
+    # Produce some indentation.
+    listhtml = "  " + "\n  ".join(listitems)
     log.debug("Generated the following toc list:\n%s", listhtml)
-    prefix = """
-<div class="sidebar-module">
-<h4>Contents</h4>
-<ol class="list-unstyled">\n"""
-    suffix = '\n</ol></div>'
+    # Add class "brcontents" (br namespace stands for beautiful-readme).
+    prefix = ('<div class="sidebar-module brcontents">\n'
+        '  <h4>Contents</h4>\n'
+        '  <ol class="list-unstyled">')
+    suffix = '  </ol>\n</div>'
     toc = "\n".join([prefix, listhtml, suffix])
     return body, toc
  
