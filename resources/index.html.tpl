@@ -20,6 +20,10 @@
     pre {
         word-wrap: normal;
     }
+    
+    .blog-footer {
+        margin-top: 50px;
+    }
 
     /* Add styles */
     .section {
