@@ -3,6 +3,14 @@
 # Copyright 2014 Jan-Philip Gehrcke (http://gehrcke.de).
 # See LICENSE file for details.
 
+"""
+JS from
+https://raw.github.com/twbs/bootstrap/v3.1.1/dist/js/bootstrap.min.js
+
+CS from
+...
+
+"""
 
 from __future__ import unicode_literals
 
