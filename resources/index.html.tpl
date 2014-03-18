@@ -15,6 +15,14 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <style type="text/css">
+    /* Override some bootstrap.css / blog.css styles */
+
+    /* Add styles */
+    .section {
+        margin-top: 30px;
+    }
+    </style>
   </head>
   <body>
     <!--
@@ -52,9 +60,9 @@
       <p>$copyright</p>
       <p><a href="#">Back to top</a></p>
     </div>
-    <!-- I think these scripts are not required for now.
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="../../dist/js/bootstrap.min.js"></script>
+    <!-- I think these scripts are not required for now.
     <script src="../../assets/js/docs.min.js"></script>
     -->
     $googleanalytics
