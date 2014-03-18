@@ -12,8 +12,15 @@ import os
 import re
 import shutil
 import logging
+from collections import OrderedDict
 from string import Template
 from subprocess import Popen, PIPE
+import urllib
+try:
+    import HTMLParser as htmlparser
+except ImportError:
+    import html.parser as htmlparser
+
 import conf
 
 
@@ -79,6 +86,50 @@ class DocutilsTitleFilter(BodyFilter):
         return "\n".join(bodylines[1:])
 
 
+def heading_to_label(heading):
+    log.debug("Converting '%r' to label.", heading)
+    # First, decode HTML entities:
+    h = htmlparser.HTMLParser().unescape(heading)
+    log.debug("Unescaped heading: %r", h)
+    # Then, split at whitespace, then get rid of all
+    # non-alphanumeric chars in each token and reconnect with "-".
+    cleantokens = (re.sub('[^0-9a-zA-Z]+', '', s).lower() for s in h.split())
+    return "toc-" + "-".join(t for t in cleantokens if t)
+
+
+def auto_toc_from_h1(body):
+    label_heading_dict = OrderedDict()
+    def replace_heading(matchobj):
+        heading = matchobj.group(1)
+        label = heading_to_label(heading)
+        log.info("Found heading: %r", heading)
+        rpl = '<h1 id="%s">%s</h1>' % (label, heading)
+        log.info("Replacing with: %r", rpl)
+        # Save correspondence for later.
+        label_heading_dict[label] = heading
+        return rpl
+
+    log.info("Scanning body for <h1>*</h1>, replacing on the fly.")
+    body = re.sub("<h1>(.*)</h1>", replace_heading, body)
+
+    # Validation of anchors: should be unique!
+    # First check within the newly created labels.
+    labels = label_heading_dict.keys()
+    if len(set(labels)) != len(labels):
+        log.error("Duplicate headline. Must be unique, abort.")
+        sys.exit(1)
+    
+    listitems = []
+    for label, heading in label_heading_dict.items():
+        listitems.append('<li><a href="#%s">%s</a></li>' % (label, heading))
+    listhtml = "\n".join(listitems)
+    log.debug("Generated the following toc list:\n%s", listhtml)
+    prefix = '<div class="sidebar-module"><h4>Contents</h4><ol class="list-unstyled">'
+    suffix = '</ol></div>'
+    toc = "\n".join([prefix, listhtml, suffix])
+    return body, toc
+ 
+
 def main():
     # Read basic HTML scaffold.
     log.info("Read HTML template from %s", HTMLTMPL)
@@ -103,8 +154,8 @@ def main():
     log.debug("Subprocess details: %s", args)
     sp = Popen(args, stdout=PIPE, stderr=PIPE)
     bodyconverter_out, bodyconverter_err = sp.communicate()
-    if sp.exitcode != 0:
-        log.error("Subprocess exitcode: %s", sp.exitcode)
+    if sp.returncode != 0:
+        log.error("Subprocess exitcode: %s", sp.returncode)
         log.info("Subprocess stderr:\n%s", bodyconverter_err)
         log.info("Exit with code 1.")
         sys.exit(1)
@@ -114,6 +165,8 @@ def main():
     bodyfilter = [DocutilsTitleFilter()]
     for bfilter in bodyfilter:
         body = bfilter.process(body)
+
+    body, toc = auto_toc_from_h1(body)
 
     # Prepare GA snippet if requested by config.
     ga_snippet = ""
@@ -131,10 +184,11 @@ def main():
         "body": body,
         "about": conf.about,
         "copyright": conf.copyright,
-        "sidebar": conf.sidebar,
+        "sidebar": conf.sidebar + "\n" + toc,
         "googleanalytics": ga_snippet,
         }
     htmlout = htmltpl.substitute(template_mapping)
+
 
     # Write HTML document.
     indexhtmlpath = os.path.join(BUILDDIR, "index.html")
