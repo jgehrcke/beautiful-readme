@@ -17,6 +17,9 @@
     <![endif]-->
     <style type="text/css">
     /* Override some bootstrap.css / blog.css styles */
+    pre {
+        word-wrap: normal;
+    }
 
     /* Add styles */
     .section {
