@@ -29,22 +29,10 @@
     .section {
         margin-top: 30px;
     }
+    $customcss
     </style>
   </head>
   <body>
-    <!--
-    <div class="blog-masthead">
-      <div class="container">
-        <nav class="blog-nav">
-          <a class="blog-nav-item active" href="#">Home</a>
-          <a class="blog-nav-item" href="#">New features</a>
-          <a class="blog-nav-item" href="#">Press</a>
-          <a class="blog-nav-item" href="#">New hires</a>
-          <a class="blog-nav-item" href="#">About</a>
-        </nav>
-      </div>
-    </div>
-    -->
     <div class="container">
       <div class="blog-header">
         <h1 class="blog-title">$title</h1>
@@ -69,10 +57,7 @@
       <p><a href="#">Back to top</a></p>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    <!-- I think these scripts are not required for now.
-    <script src="../../assets/js/docs.min.js"></script>
-    -->
+    <!-- <script src="static/js/bootstrap.min.js"></script> -->
     $googleanalytics
   </body>
 </html>
