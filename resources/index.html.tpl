@@ -47,6 +47,7 @@
         <div class="col-sm-8 blog-main">
         $body
         </div><!-- /.blog-main -->
+        <!--<div data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="col-sm-3 col-sm-offset-1 blog-sidebar">-->
         <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
           <div class="sidebar-module sidebar-module-inset">
             <h4>About</h4>

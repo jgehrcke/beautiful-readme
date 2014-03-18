@@ -132,8 +132,11 @@ def auto_toc_from_h1(body):
         listitems.append('<li><a href="#%s">%s</a></li>' % (label, heading))
     listhtml = "\n".join(listitems)
     log.debug("Generated the following toc list:\n%s", listhtml)
-    prefix = '<div class="sidebar-module"><h4>Contents</h4><ol class="list-unstyled">'
-    suffix = '</ol></div>'
+    prefix = """
+<div class="sidebar-module">
+<h4>Contents</h4>
+<ol class="list-unstyled">\n"""
+    suffix = '\n</ol></div>'
     toc = "\n".join([prefix, listhtml, suffix])
     return body, toc
  
