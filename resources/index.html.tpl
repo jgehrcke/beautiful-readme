@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
     <title>{{ title }}</title>
     <!--<link href="static/css/bootstrap.min.css" rel="stylesheet">-->
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="static/css/blog.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
