@@ -3,17 +3,12 @@
 # Copyright 2014 Jan-Philip Gehrcke (http://gehrcke.de).
 # See LICENSE file for details.
 
-"""
-JS from
-https://raw.github.com/twbs/bootstrap/v3.1.1/dist/js/bootstrap.min.js
 
-CS from
-...
-
+"""beautiful-readme.
 """
+
 
 from __future__ import unicode_literals
-
 
 import sys
 import os
@@ -31,11 +26,6 @@ except ImportError:
     import html.parser as htmlparser
 
 
-DOCUTLSTMPL = "resources/docutils_template.txt"
-BUILDDIR = "_build"
-HTMLTMPL = "resources/index.html.tpl"
-
-
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -47,83 +37,86 @@ log.addHandler(ch)
 
 
 try:
-    import conf
+    import jinja2
 except ImportError:
-    err("Cannort import config. conf.py missing?")
-
-# Either docutils or markdown...
-# http://docutils.sourceforge.net/docs/api/publisher.html#publish-parts-details
-# https://pythonhosted.org/Markdown/reference.html#output_format
-# if conf.markdown.... or...
-try:
-    import docutils.core
-except ImportError:
-    err("Missing dependency: cannort import docutils.")
+    err("Missing dependency: cannot import jinja2.")
 
 
 def main():
-    # Read basic HTML scaffold.
-    log.info("Read HTML template from %s", HTMLTMPL)
-    with open(HTMLTMPL, "rb") as f:
-        htmltpl = Template(f.read().decode("utf-8"))
+    global markdown
+    global docutils
+
+    bodysourcefilepath = sys.argv[1]
+
+    log.info("Importing config.")
+    try:
+        import conf
+    except ImportError:
+        err("Cannot import config. Is conf.py in current working directory?")
+
+    try:
+        if conf.converter == "markdown":
+            log.info("Importing markdown.")
+            import markdown
+            converter = MarkdownConverter()
+        elif conf.converter == "docutils":
+            log.info("Importing docutils.")
+            import docutils.core
+            converter = DocutilsConverter()
+        else:
+            err("Config error: converter must be 'markdown' or 'docutils.")
+    except ImportError:
+        err("Missing dependency: cannort import %s." % conf.converter)
 
     # (Re-)create build directory.
     log.info("Create build directory.")
-    if os.path.isdir(BUILDDIR):
-        shutil.rmtree(BUILDDIR)
-        os.mkdir(BUILDDIR)
-    shutil.copytree("resources/static", os.path.join(BUILDDIR, "static"))
+    if os.path.isdir(conf.builddir):
+        log.info("Purge previously existing build directory: %s", conf.builddir)
+        shutil.rmtree(conf.builddir)
+    os.mkdir(conf.builddir)
+    # TODO: only do this if necessary (i.e. if CSS/JS resources required).
+    log.info("Copy static files to build dir.")
+    shutil.copytree("resources/static", os.path.join(conf.builddir, "static"))
 
-    # Create document body: convert body source (rst, markdown) to HTML.
+    jinjaenv = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(searchpath="resources"),
+        trim_blocks=False)
+    # Read basic HTML scaffold.
+    log.info("Read HTML template from %s", "index.html.tpl")
+    htmltemplate = jinjaenv.get_template("index.html.tpl")
+
+    sourceenc = "utf-8"
+    log.info("Read %s, decode with %s codec.", bodysourcefilepath, sourceenc)
+    with open(bodysourcefilepath, "rb") as f:
+        bodysource = f.read().decode(sourceenc)
+
     log.info("Create document body: convert source to HTML.")
-    bodysourcefilepath = sys.argv[1]
-    args = [
-        conf.rst2htmlexe,
-        "--template=%s" % DOCUTLSTMPL,
-        bodysourcefilepath
-        ]
-    log.debug("Subprocess details: %s", args)
-    sp = Popen(args, stdout=PIPE, stderr=PIPE)
-    bodyconverter_out, bodyconverter_err = sp.communicate()
-    if sp.returncode != 0:
-        log.error("Subprocess exitcode: %s", sp.returncode)
-        log.info("Subprocess stderr:\n%s", bodyconverter_err)
-        log.info("Exit with code 1.")
-        sys.exit(1)
+    htmlbody = converter.process(bodysource)
 
     # Filter body.
-    body = bodyconverter_out
-    bodyfilter = [DocutilsTitleFilter()]
-    for bfilter in bodyfilter:
-        body = bfilter.process(body)
+    #bodyfilter = [DocutilsTitleFilter()]
+    #for bfilter in bodyfilter:
+    #    htmlbody = bfilter.process(htmlbody)
 
-    body, toc = auto_toc_from_h1(body)
-
-    # Prepare GA snippet if requested by config.
-    ga_snippet = ""
-    if conf.googleanalytics_id:
-        log.info("Prepare Google Analytics snippet with ID %s",
-            conf.googleanalytics_id)
-        ga_snippet = Template(GA_SNIPPET).substitute(
-            googleanalytics_id = conf.googleanalytics_id)
+    htmlbody, toc = auto_toc_from_h1(htmlbody)
 
     # Create HTML document: fill basic HTML template.
     log.info("Create main HTML document (fill template).")
     template_mapping = {
         "title": conf.title,
         "description": conf.description,
-        "body": body,
+        "body": htmlbody,
         "about": conf.about,
         "copyright": conf.copyright,
         "sidebar": conf.sidebar + "\n" + toc,
-        "googleanalytics": ga_snippet,
+        "google_analytics_id": conf.google_analytics_id,
         "customcss": conf.customcss,
         }
-    htmlout = htmltpl.substitute(template_mapping)
 
+    htmlout = htmltemplate.render(**template_mapping)
 
     # Write HTML document.
-    indexhtmlpath = os.path.join(BUILDDIR, "index.html")
+    indexhtmlpath = os.path.join(conf.builddir, "index.html")
     log.info("Write %s.", indexhtmlpath)
     with open(indexhtmlpath, "wb") as f:
         f.write(htmlout.encode("utf-8"))
@@ -132,6 +125,67 @@ def main():
 def err(msg):
     log.error(msg)
     sys.exit(1)
+
+
+class Converter(object):
+    def __init__(self):
+        pass
+
+
+class DocutilsConverter(Converter):
+    """
+    http://docutils.sourceforge.net/docs/api/publisher.html
+    """
+    def process(self, doc):
+        return self._html_fragment(doc)
+
+    def _html_fragment(self, doc):
+        """
+        Return 'fragment' part of docutils HTML document. `doc` is unicode RST
+        source.
+
+        Largely copied from
+        http://docutils.sourceforge.net/docutils/examples.py
+
+        Parameters used below:
+        - `source`: A multi-line text string; required.
+        - `source_path`: Path to the source file or object. Optional, but useful
+          for diagnostic output (system messages).
+        - `destination_path`: Path to the file or object which will receive the
+          output; optional.  Used for determining relative paths (stylesheets,
+          source links, etc.).
+        - `input_encoding`: The encoding of `input_string`.  If it is an encoded
+          8-bit string, provide the correct encoding.  If it is a Unicode string,
+          use "unicode", the default.
+        - `doctitle_xform`: Disable the promotion of a lone top-level section
+          title to document title (and subsequent section title to document
+          subtitle promotion); enabled by default.
+        - `initial_header_level`: The initial level for header elements (e.g. 1
+          for "<h1>").
+        """
+        overrides = {
+            'input_encoding': "unicode",
+            'doctitle_xform': True,
+            'initial_header_level': 1
+            }
+        parts = docutils.core.publish_parts(
+            source=doc,
+            source_path=None,
+            destination_path=None,
+            writer_name='html',
+            settings_overrides=overrides)
+        # "parts['fragment'] contains the document body (not the HTML <body>).
+        # In other words, it contains the entire document, less the document
+        # title, subtitle, docinfo, header, and footer."
+        return parts["fragment"]
+
+
+class MarkdownConverter(Converter):
+    """
+    https://pythonhosted.org/Markdown/reference.html
+    """
+    def process(self, doc):
+        return markdown.markdown(doc)
 
 
 class BodyFilterError(Exception):
@@ -234,24 +288,6 @@ def auto_toc_from_h1(body):
     suffix = '  </ol>\n</div>'
     toc = "\n".join([prefix, listhtml, suffix])
     return body, toc
-
-
-# Define GA snippet. Official version from
-# https://developers.google.com/analytics/devguides/collection/gajs/asyncTracking
-# TODO: use optimized versin from HTML5 boilerplate project:
-# https://github.com/h5bp/html5-boilerplate/issues/1444
-GA_SNIPPET = """
-<script type="text/javascript">
-  var _gaq = _gaq || [];i
-  _gaq.push(['_setAccount', '$googleanalytics_id']);
-  _gaq.push(['_trackPageview']);
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
-"""
 
 
 if __name__ == "__main__":

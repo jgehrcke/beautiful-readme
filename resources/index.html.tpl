@@ -7,8 +7,9 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
-    <title>$title</title>
-    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <title>{{ title }}</title>
+    <!--<link href="static/css/bootstrap.min.css" rel="stylesheet">-->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="static/css/blog.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -20,7 +21,7 @@
     pre {
         word-wrap: normal;
     }
-    
+
     .blog-footer {
         margin-top: 50px;
     }
@@ -29,35 +30,57 @@
     .section {
         margin-top: 30px;
     }
-    $customcss
+    {{ customcss }}
     </style>
   </head>
   <body>
     <div class="container">
       <div class="blog-header">
-        <h1 class="blog-title">$title</h1>
-        <p class="lead blog-description">$description</p>
+        <h1 class="blog-title">{{ title }}</h1>
+        <p class="lead blog-description">{{ description }}</p>
       </div>
       <div class="row">
         <div class="col-sm-8 blog-main">
-        $body
+        {{ body }}
         </div><!-- /.blog-main -->
-        <!--<div data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="col-sm-3 col-sm-offset-1 blog-sidebar">-->
+        <!-- No affix sidebar for now, seems to be problematic (cf. issue tracker)
+        <div data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="col-sm-3 col-sm-offset-1 blog-sidebar">
+        -->
         <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
           <div class="sidebar-module sidebar-module-inset">
             <h4>About</h4>
-            <p>$about</p>
+            <p>{{ about }}</p>
           </div>
-        $sidebar
+        {{ sidebar }}
         </div><!-- /.blog-sidebar -->
       </div><!-- /.row -->
     </div><!-- /.container -->
     <div class="blog-footer">
-      <p>$copyright</p>
+      <p>{{ copyright }}</p>
       <p><a href="#">Back to top</a></p>
     </div>
+    <!--
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <!-- <script src="static/js/bootstrap.min.js"></script> -->
-    $googleanalytics
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    -->
+    {% if google_analytics_id -%}
+    {#
+      Define GA snippet. Official version from
+      https://developers.google.com/analytics/devguides/collection/gajs/asyncTracking
+      TODO: use optimized versin from HTML5 boilerplate project:
+      https://github.com/h5bp/html5-boilerplate/issues/1444
+    #}
+    <script type="text/javascript">
+      var _gaq = _gaq || [];i
+      _gaq.push(['_setAccount', '{{ google_analytics_id }}']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+    {% endif -%}
   </body>
 </html>
