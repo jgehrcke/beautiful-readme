@@ -20,6 +20,7 @@ from string import Template
 from subprocess import Popen, PIPE
 import urllib
 
+
 try:
     import HTMLParser as htmlparser
 except ImportError:
