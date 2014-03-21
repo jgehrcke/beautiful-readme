@@ -1,0 +1,44 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+# Select converter. Either "markdown" or "docutils"
+converter = "docutils"
+#converter = "markdown"
+
+# Document content config.
+title = "Nothing"
+description = "beautiful-readme demo website."
+about = """
+Nothing is
+<a href="http://opensource.org/licenses/MIT">MIT licensed</a>, but inherently
+boring software. Nevertheless, you might want to give it a try!
+"""
+
+copyright = """© 2014 <a href="http://gehrcke.de">Jon Johnson</a>"""
+sidebar = """
+<div class="sidebar-module sidebar-module-inset">
+    <h4>Something else</h4>
+    <p>For bug reports and suggestions, please use the
+    <a href="#">issue section</a> on GitHub.
+    Pull requests are welcome. You can also drop us a line at
+    rofl@copter.com.</p>
+</div>
+<div class="sidebar-module">
+<h4>Resources</h4>
+<ol class="list-unstyled">
+  <li><a href="#">GitHub</a></li>
+  <li><a href="#">PyPI</a></li>
+  <li><a href="#">Whatever</a></li>
+  <li><a href="#">Changelog</a></li>
+  <li><a href="#">Related</a></li>
+</ol>
+</div>"""
+
+
+# Document layout.
+# Additional CSS code.
+customcss = ""
+
+# Google Analytics integration.
+# Leave string empty if you do not want a GA snippet to be included.
+googleanalytics_id = ""
