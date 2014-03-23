@@ -33,6 +33,14 @@ version = re.search(
 setup(
     name = "beautiful-readme",
     packages = ["beautifulreadme"],
+    package_data= {
+        "beautifulreadme": [
+            "resources/index.html.tpl",
+            "resources/static/css/*",
+            "resources/static/js/*",
+            "README.md",
+            "LICENSE"
+        ]},
     entry_points = {
         "console_scripts": ['beautiful-readme = beautifulreadme.main:main']
         },
