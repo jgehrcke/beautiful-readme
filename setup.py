@@ -44,6 +44,7 @@ setup(
     long_description=long_description,
     keywords = ["readme", "website", "static", "Bootstrap"],
     platforms = ["POSIX", "Windows"],
+    install_requires = ["markdown", "docutils"]
     classifiers = [
         "Programming Language :: Python",
         "Development Status :: 3 - Alpha",
