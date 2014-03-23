@@ -44,7 +44,7 @@ except ImportError:
     err("Missing dependency: cannot import jinja2.")
 
 
-__version__ = "0.1.0"
+__version__ = '0.1.0'
 
 
 # To be populated by argparse from cmdline arguments.
