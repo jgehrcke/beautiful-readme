@@ -117,11 +117,24 @@ def main():
     htmlbody = converter.process(bodysource)
 
     # Filter body.
-    #bodyfilter = [DocutilsTitleFilter()]
-    #for bfilter in bodyfilter:
-    #    htmlbody = bfilter.process(htmlbody)
+    bodyfilter = []
+    if config["converter"] == "markdown":
+        bodyfilter.append(MarkdownTitleFilter())
+    for bfilter in bodyfilter:
+        htmlbody = bfilter.process(htmlbody)
 
+    # Modify body on the fly (populate h2 tags with with ids).
+    # Generate Table Of Contents HTML code on the fly.
     htmlbody, toc = auto_toc_from_h2(htmlbody)
+
+    sidebar = config["sidebar"]
+    # Just don't include TOC HTML if not desired (modified h2 tags are still
+    # convenient).
+    if config["sidebar_toc"]:
+        log.info("Prepare sidebar TOC inclusion.")
+        sidebar += "\n" + toc,
+    else:
+        log.info("Do not include sidebar TOC.")
 
     # Create HTML document: fill basic HTML template.
     log.info("Create main HTML document (fill template).")
@@ -131,7 +144,7 @@ def main():
         "body": htmlbody,
         "about": config["about"],
         "copyright": config["copyright"],
-        "sidebar": config["sidebar"] + "\n" + toc,
+        "sidebar": sidebar,
         "google_analytics_id": config["google_analytics_id"],
         "customcss": config["customcss"],
         }
@@ -210,7 +223,7 @@ class MarkdownConverter(Converter):
     def process(self, doc):
         return markdown.markdown(
             text=doc,
-            output_format="html5",
+            output_format="html5"
             )
 
 
@@ -259,6 +272,35 @@ class DocutilsTitleFilter(BodyFilter):
         if not match:
             raise BodyFilterError("First line contains h1, but does not match pattern.")
         log.info('First line contains docutils title (<h1 class="title">...</h1>). Remove.')
+        return "\n".join(bodylines[1:])
+
+
+class MarkdownTitleFilter(BodyFilter):
+    """From the first line, remove <h1>xxx</h1> in case of markdown.
+
+    The idea is to remove the heading of highest hierarchy level. It is expected
+    to be the document title which is added by this beautiful-readme anyway.
+
+    In case of docutils, this issue is solved differently: the title detection
+    is done by docutils itself and we don't request the title to be contained in
+    the HTML output.
+
+    TODO/expected problem: if original README does not have a clear title, i.e.
+    of headings in the original README are all on the same hierarchy level or
+    if the first heading shares its hierarchy level with another heading, then
+    this filter does not make sense, probably.
+    """
+    def _process(self, body):
+        bodylines = body.splitlines()
+        first = bodylines[0]
+        if not "h1" in first:
+            log.info("No h1 in first line of body. Skip.")
+            return body
+        match = re.search('<h1>.*</h1>', first)
+        if not match:
+            raise BodyFilterError(
+                "First line contains h1, but does not match pattern.")
+        log.info('First line contains title (<h1>...</h1>). Remove.')
         return "\n".join(bodylines[1:])
 
 
