@@ -10,15 +10,16 @@
 
 from __future__ import unicode_literals
 
-import sys
+
 import os
 import re
+import sys
 import shutil
-import logging
-from collections import OrderedDict
-from string import Template
-from subprocess import Popen, PIPE
 import urllib
+import logging
+import argparse
+from collections import OrderedDict
+from subprocess import Popen, PIPE
 
 
 try:
@@ -43,15 +44,23 @@ except ImportError:
     err("Missing dependency: cannot import jinja2.")
 
 
+__version__ = "0.1.0"
+
+
+# To be populated by argparse from cmdline arguments.
+cmdlineopts = None
+
+
 def main():
     global markdown
     global docutils
+    global conf
 
-    bodysourcefilepath = sys.argv[1]
+    parse_options()
 
     log.info("Importing config.")
     try:
-        import conf
+        import brconf as conf
     except ImportError:
         err("Cannot import config. Is conf.py in current working directory?")
 
@@ -87,8 +96,11 @@ def main():
     htmltemplate = jinjaenv.get_template("index.html.tpl")
 
     sourceenc = "utf-8"
-    log.info("Read %s, decode with %s codec.", bodysourcefilepath, sourceenc)
-    with open(bodysourcefilepath, "rb") as f:
+    log.info("Read %s, decode with %s codec.",
+        cmdlineopts.readmefile, sourceenc)
+    if not os.path.isfile(cmdlineopts.readmefile):
+        err("Cannot find file: %s" % cmdlineopts.readmefile)
+    with open(cmdlineopts.readmefile, "rb") as f:
         bodysource = f.read().decode(sourceenc)
 
     log.info("Create document body: convert source to HTML.")
@@ -289,6 +301,29 @@ def auto_toc_from_h1(body):
     suffix = '  </ol>\n</div>'
     toc = "\n".join([prefix, listhtml, suffix])
     return body, toc
+
+
+def parse_options():
+    desc = "Create a simple mobile-friendly static website from your README."
+    parser = argparse.ArgumentParser(
+        prog="beautiful-readme",
+        description=desc,
+        epilog="Version %s" % __version__,
+        add_help=False
+        )
+    parser.add_argument("-h", "--help", action="help",
+        help="Show help message and exit."
+        )
+    parser.add_argument("--version", action="version",
+        version=__version__, help="Show version information and exit."
+        )
+    parser.add_argument("readmefile", action="store",
+        metavar="README",
+        help=("Path to a README file (reStructuredText or Markdown). Expected "
+            "encoding: UTF-8.")
+        )
+    global cmdlineopts
+    cmdlineopts = parser.parse_args()
 
 
 if __name__ == "__main__":
