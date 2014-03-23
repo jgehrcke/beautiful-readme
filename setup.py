@@ -9,10 +9,11 @@ from setuptools import setup
 
 
 long_description = \
-"""Beautiful-readme converts a single README file into a simple and modern
-`Bootstrap`_-powered static website.
+"""Beautiful-readme converts a single README file into a simple, modern, and
+mobile-friendly `Bootstrap`_-powered static website.
 
 Resources:
+
 - Documentation_
 - GitHub_
 
@@ -20,6 +21,7 @@ Resources:
 .. _GitHub: http://github.com/jgehrcke/beautiful-readme
 .. _Documentation: http://gehrcke.de/beautiful-readme
 """
+
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"',
@@ -39,12 +41,12 @@ setup(
     author = "Jan-Philip Gehrcke",
     author_email = "jgehrcke@googlemail.com",
     url = "http://gehrcke.de/beautiful-readme",
-    long_description=open("README.rst", "rb").read().decode('utf-8'),
+    long_description=long_description,
     keywords = ["readme", "website", "static", "Bootstrap"],
     platforms = ["POSIX", "Windows"],
     classifiers = [
         "Programming Language :: Python",
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX",
         "Operating System :: Microsoft :: Windows",
