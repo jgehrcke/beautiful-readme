@@ -26,8 +26,7 @@
         margin-top: 50px;
     }
 
-    /* Add styles */
-    .section {
+    h2 {
         margin-top: 30px;
     }
     {{ customcss }}
