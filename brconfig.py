@@ -25,13 +25,15 @@ sidebar = """
     <a href="#">issue section</a> on GitHub.
     Pull requests are welcome.</p>
 </div>
-<div class="sidebar-module">
+<div class="sidebar-module sidebar-module-inset">
 <h4>Resources</h4>
 <ol class="list-unstyled">
   <li><a href="https://github.com/jgehrcke/beautiful-readme">GitHub</a></li>
   <li><a href="https://pypi.python.org/pypi/beautiful-readme">PyPI</a></li>
 </ol>
 </div>"""
+
+sidebar_toc = False
 
 
 # Document layout.
