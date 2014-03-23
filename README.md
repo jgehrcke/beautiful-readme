@@ -1,6 +1,8 @@
 # Beautiful-readme #
 
-Beautiful-readme converts a single-file README into a simple and modern [Bootstrap](http://getbootstrap.com/)-powered static website.
+Beautiful-readme converts a single README file into a simple and modern [Bootstrap](http://getbootstrap.com/)-powered static website.
+
+Simplicity and clarity are the major design goals of beautiful-readme. For more feature-rich solutions, I recommend having a look at [Sphinx](http://sphinx-doc.org/) and [Beautiful docs](http://beautifuldocs.com/).
 
 ## Demo ##
 [Here](http://gehrcke.de/beautiful-readme) (built from *this* README).
@@ -25,6 +27,12 @@ A static website, according to the [KISS principle](http://en.wikipedia.org/wiki
 - Custom CSS injection (optional).
 - Custom sidebar HTML code injection (optional).
 
+## Author & License
+Beautiful-readme is written and maintained by [Jan-Philip Gehrcke](http://gehrcke.de>). It is licensed under an MIT license (see LICENSE file).
+
+## Changelog ##
+### Version 0.1.0 (Month dd, YYYY) ###
+- Initial release.
 
 
-Major design goals of beautiful-readme: simplicity, clarity. For more feature-rich solutions, have a look at [Sphinx](http://sphinx-doc.org/) and [Beautiful docs](http://beautifuldocs.com/). Beautiful-readme is written and maintained by [Jan-Philip Gehrcke](http://gehrcke.de>). It is licensed under an MIT license (see LICENSE file).
+
