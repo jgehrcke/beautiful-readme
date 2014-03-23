@@ -132,7 +132,7 @@ def main():
     # convenient).
     if config["sidebar_toc"]:
         log.info("Prepare sidebar TOC inclusion.")
-        sidebar += "\n" + toc,
+        sidebar = "%s\n%s" % (sidebar, toc)
     else:
         log.info("Do not include sidebar TOC.")
 
@@ -350,7 +350,7 @@ def auto_toc_from_h2(body):
     listhtml = "  " + "\n  ".join(listitems)
     log.debug("Generated the following toc list:\n%s", listhtml)
     # Add class "brcontents" (br namespace stands for beautiful-readme).
-    prefix = ('<div class="sidebar-module brcontents">\n'
+    prefix = ('<div class="sidebar-module sidebar-module-inset brcontents">\n'
         '  <h4>Contents</h4>\n'
         '  <ol class="list-unstyled">')
     suffix = '  </ol>\n</div>'
