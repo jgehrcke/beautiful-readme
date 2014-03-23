@@ -51,6 +51,10 @@ __version__ = "0.1.0"
 cmdlineopts = None
 
 
+# To be popluated when executing config file.
+config = {}
+
+
 def main():
     global markdown
     global docutils
@@ -58,38 +62,44 @@ def main():
 
     parse_options()
 
-    log.info("Importing config.")
-    try:
-        import brconf as conf
-    except ImportError:
-        err("Cannot import config. Is conf.py in current working directory?")
+    resdir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "resources")
+    log.debug("Identified resource dir: %s", resdir)
+    if not os.path.isdir(resdir):
+        err("Cannot access identified resource dir: %s" % resdir)
+
+    log.info("Read config.")
+    exec_config_file(cmdlineopts.configfile)
 
     try:
-        if conf.converter == "markdown":
+        if config["converter"] == "markdown":
             log.info("Importing markdown.")
             import markdown
             converter = MarkdownConverter()
-        elif conf.converter == "docutils":
+        elif config["converter"] == "docutils":
             log.info("Importing docutils.")
             import docutils.core
             converter = DocutilsConverter()
         else:
             err("Config error: converter must be 'markdown' or 'docutils.")
     except ImportError:
-        err("Missing dependency: cannort import %s." % conf.converter)
+        err("Missing dependency: cannort import %s." % config["converter"])
 
     # (Re-)create build directory.
     log.info("Create build directory.")
-    if os.path.isdir(conf.builddir):
-        log.info("Purge previously existing build directory: %s", conf.builddir)
-        shutil.rmtree(conf.builddir)
-    os.mkdir(conf.builddir)
+    if os.path.isdir(config["builddir"]):
+        log.info("Purge previously existing build directory: %s",
+            config["builddir"])
+        shutil.rmtree(config["builddir"])
+    os.mkdir(config["builddir"])
     # TODO: only do this if necessary (i.e. if CSS/JS resources required).
     log.info("Copy static files to build dir.")
-    shutil.copytree("resources/static", os.path.join(conf.builddir, "static"))
+    shutil.copytree(
+        os.path.join(resdir, "static"),
+        os.path.join(config["builddir"], "static"))
 
     jinjaenv = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(searchpath="resources"),
+        loader=jinja2.FileSystemLoader(searchpath=resdir),
         trim_blocks=False)
     # Read basic HTML scaffold.
     log.info("Read HTML template from %s", "index.html.tpl")
@@ -116,20 +126,20 @@ def main():
     # Create HTML document: fill basic HTML template.
     log.info("Create main HTML document (fill template).")
     template_mapping = {
-        "title": conf.title,
-        "description": conf.description,
+        "title": config["title"],
+        "description": config["description"],
         "body": htmlbody,
-        "about": conf.about,
-        "copyright": conf.copyright,
-        "sidebar": conf.sidebar + "\n" + toc,
-        "google_analytics_id": conf.google_analytics_id,
-        "customcss": conf.customcss,
+        "about": config["about"],
+        "copyright": config["copyright"],
+        "sidebar": config["sidebar"] + "\n" + toc,
+        "google_analytics_id": config["google_analytics_id"],
+        "customcss": config["customcss"],
         }
 
     htmlout = htmltemplate.render(**template_mapping)
 
     # Write HTML document.
-    indexhtmlpath = os.path.join(conf.builddir, "index.html")
+    indexhtmlpath = os.path.join(config["builddir"], "index.html")
     log.info("Write %s.", indexhtmlpath)
     with open(indexhtmlpath, "wb") as f:
         f.write(htmlout.encode("utf-8"))
@@ -179,7 +189,7 @@ class DocutilsConverter(Converter):
         overrides = {
             'input_encoding': "unicode",
             'doctitle_xform': True,
-            'initial_header_level': 1
+            'initial_header_level': 2
             }
         parts = docutils.core.publish_parts(
             source=doc,
@@ -198,7 +208,10 @@ class MarkdownConverter(Converter):
     https://pythonhosted.org/Markdown/reference.html
     """
     def process(self, doc):
-        return markdown.markdown(doc)
+        return markdown.markdown(
+            text=doc,
+            output_format="html5",
+            )
 
 
 class BodyFilterError(Exception):
@@ -317,6 +330,10 @@ def parse_options():
     parser.add_argument("--version", action="version",
         version=__version__, help="Show version information and exit."
         )
+    parser.add_argument("-c", "--configfile", action="store",
+        default="brconfig.py",
+        help="Path to configuration file."
+        )
     parser.add_argument("readmefile", action="store",
         metavar="README",
         help=("Path to a README file (reStructuredText or Markdown). Expected "
@@ -324,6 +341,22 @@ def parse_options():
         )
     global cmdlineopts
     cmdlineopts = parser.parse_args()
+
+
+def exec_config_file(cfgfilepath):
+    # http://stackoverflow.com/a/6357418/145400
+    # http://stackoverflow.com/a/8226090/145400
+    # https://bitbucket.org/birkenfeld/sphinx/src/1.2.2/sphinx/util/pycompat.py
+    if not os.path.isfile(cfgfilepath):
+        err("Cannot access configuration file: %s." % cfgfilepath)
+    global config
+    if sys.version < '3':
+        execfile(cfgfilepath, config)
+    else:
+        exec(
+            compile(open(cfgfilepath, "rb").read(), cfgfilepath, 'exec'),
+            config
+            )
 
 
 if __name__ == "__main__":
