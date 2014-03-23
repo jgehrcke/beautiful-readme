@@ -50,3 +50,6 @@ google_analytics_id = ""
 
 # Build directory (relative from current working directory).
 builddir = "_build"
+
+# Beautiful-readme attribution in footer.
+attribution = True

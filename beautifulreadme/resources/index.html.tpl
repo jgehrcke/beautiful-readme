@@ -55,8 +55,11 @@
       </div><!-- /.row -->
     </div><!-- /.container -->
     <div class="blog-footer">
-      <p>{{ copyright }}</p>
       <p><a href="#">Back to top</a></p>
+      <p>{{ copyright }}</p>
+      {% if attribution -%}
+      <p>Created with <a href="http://gehrcke.de/beautiful-readme">beautiful-readme</a>.</p>
+      {% endif -%}
     </div>
     <!--
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>

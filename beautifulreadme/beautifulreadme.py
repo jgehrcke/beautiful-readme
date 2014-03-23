@@ -147,6 +147,7 @@ def main():
         "sidebar": sidebar,
         "google_analytics_id": config["google_analytics_id"],
         "customcss": config["customcss"],
+        "attribution": config["attribution"],
         }
 
     htmlout = htmltemplate.render(**template_mapping)
