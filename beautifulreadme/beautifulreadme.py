@@ -121,7 +121,7 @@ def main():
     #for bfilter in bodyfilter:
     #    htmlbody = bfilter.process(htmlbody)
 
-    htmlbody, toc = auto_toc_from_h1(htmlbody)
+    htmlbody, toc = auto_toc_from_h2(htmlbody)
 
     # Create HTML document: fill basic HTML template.
     log.info("Create main HTML document (fill template).")
@@ -279,20 +279,20 @@ def heading_to_label(heading):
     return "brtoc-" + "-".join(t for t in cleantokens if t)
 
 
-def auto_toc_from_h1(body):
+def auto_toc_from_h2(body):
     label_heading_dict = OrderedDict()
     def replace_heading(matchobj):
         heading = matchobj.group(1)
         label = heading_to_label(heading)
         log.info("Found heading: %r", heading)
-        rpl = '<h1 id="%s">%s</h1>' % (label, heading)
+        rpl = '<h2 id="%s">%s</h2>' % (label, heading)
         log.info("Replacing with: %r", rpl)
         # Save correspondence for later.
         label_heading_dict[label] = heading
         return rpl
 
-    log.info("Scanning body for <h1>*</h1>, replacing on the fly.")
-    body = re.sub("<h1>(.*)</h1>", replace_heading, body)
+    log.info("Scanning body for <h2>*</h2>, replacing on the fly.")
+    body = re.sub("<h2>(.*)</h2>", replace_heading, body)
 
     # Validation of anchors: should be unique!
     # First check within the newly created labels.
