@@ -22,7 +22,7 @@ sidebar = """
 <div class="sidebar-module sidebar-module-inset">
     <h4>Contribute!</h4>
     <p>For bug reports and suggestions, please use the
-    <a href="#">issue section</a> on GitHub.
+    <a href="https://github.com/jgehrcke/beautiful-readme/issues">issue section</a> on GitHub.
     Pull requests are welcome.</p>
 </div>
 <div class="sidebar-module sidebar-module-inset">
