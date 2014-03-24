@@ -10,7 +10,7 @@ Beautiful-readme converts a single readme file into a simple and modern [Bootstr
 ## Usage example ##
 Input:
 
-- A small configuration file (default name: `brconf.py`).
+- A small configuration file (default name: `brconfig.py`).
 - A readme file (reStructuredText or Markdown), e.g. `README.rst`.
 
 Execute `$ beautiful-readme README.rst` and a static website is created in the
@@ -27,7 +27,7 @@ Execute `$ beautiful-readme README.rst` and a static website is created in the
 
 
 ## Installation ##
-Beautiful-readme is hosted [on PyPI](https://pypi.python.org/pypi/beautiful-readme). Installation with pip is recommended:
+Beautiful-readme releases are hosted [on PyPI](https://pypi.python.org/pypi/beautiful-readme). Installation with pip is recommended:
 
 ```
 $ pip install beautiful-readme
