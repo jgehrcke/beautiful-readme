@@ -8,8 +8,11 @@
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
     <title>{{ title }}</title>
-    <!--<link href="static/css/bootstrap.min.css" rel="stylesheet">-->
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    {#
+    Use mincss by Peter Bengtsson for identifying unused CSS?
+    link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    #}
     <link href="static/css/blog.css" rel="stylesheet">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -18,6 +21,12 @@
     <![endif]-->
     <style type="text/css">
     /* Override some bootstrap.css / blog.css styles */
+    @media (min-width: 1200px) {
+        .container {
+          width: 1070px;
+        }
+    }
+
     pre {
         word-wrap: normal;
     }
@@ -29,6 +38,7 @@
     h2 {
         margin-top: 30px;
     }
+
     {{ customcss }}
     </style>
   </head>
@@ -41,10 +51,7 @@
       <div class="row">
         <div class="col-sm-8 blog-main">
         {{ body }}
-        </div><!-- /.blog-main -->
-        <!-- No affix sidebar for now, seems to be problematic (cf. issue tracker)
-        <div data-spy="affix" data-offset-top="60" data-offset-bottom="200" class="col-sm-3 col-sm-offset-1 blog-sidebar">
-        -->
+        </div>
         <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
           <div class="sidebar-module sidebar-module-inset">
             <h4>About</h4>
@@ -61,11 +68,6 @@
       <p>Created with <a href="http://gehrcke.de/beautiful-readme">beautiful-readme</a>.</p>
       {% endif -%}
     </div>
-    <!--
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <script src="static/js/bootstrap.min.js"></script>
-    -->
     {% if google_analytics_id -%}
     {#
       Define GA snippet. Official version from
@@ -74,7 +76,7 @@
       https://github.com/h5bp/html5-boilerplate/issues/1444
     #}
     <script type="text/javascript">
-      var _gaq = _gaq || [];i
+      var _gaq = _gaq || [];
       _gaq.push(['_setAccount', '{{ google_analytics_id }}']);
       _gaq.push(['_trackPageview']);
       (function() {
